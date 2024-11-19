@@ -1099,7 +1099,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 					kind: 'reference',
 				});
 
-				seenEntries.add(child); // TODO: @legomushroom [PR Question] - is this correct?
+				seenEntries.add(child);
 			}
 		}
 		entries.sort((a, b) => {
