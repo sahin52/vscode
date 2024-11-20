@@ -206,6 +206,7 @@ export interface IProductConfiguration {
 		readonly documentationUrl: string;
 		readonly gettingStartedCommand: string;
 		readonly welcomeTitle: string;
+		readonly privacyStatementUrl: string;
 	};
 }
 

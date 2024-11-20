@@ -50,6 +50,7 @@ const defaultChat = {
 	documentationUrl: product.defaultChatAgent?.documentationUrl ?? '',
 	gettingStartedCommand: product.defaultChatAgent?.gettingStartedCommand ?? '',
 	welcomeTitle: product.defaultChatAgent?.welcomeTitle ?? '',
+	privacyStatementUrl: product.defaultChatAgent?.privacyStatementUrl ?? ''
 };
 
 type ChatSetupEntitlementEnablementClassification = {
@@ -110,6 +111,8 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 	}
 
 	private registerChatWelcome(): void {
+		const header = localize('setupPreamble1', "{0} is your AI pair programmer that helps you write code faster and smarter.", defaultChat.name);
+		const footer = localize('setupPreamble2', "By proceeding you agree to the [Privacy Statement]({0}).", defaultChat.privacyStatementUrl);
 
 		// Setup: Triggered (signed-out)
 		Registry.as<IChatViewsWelcomeContributionRegistry>(ChatViewsWelcomeExtensions.ChatViewsWelcomeRegistry).register({
@@ -123,7 +126,12 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 				ChatContextKeys.panelParticipantRegistered.negate()
 			)!,
 			icon: defaultChat.icon,
-			content: new MarkdownString(`${localize('setupContent', "{0} is your AI pair programmer that helps you write code faster and smarter.", defaultChat.name)}\n\n[${localize('signInAndSetup', "Sign in to use {0}", defaultChat.name)}](command:${ChatSetupSignInAndInstallChatAction.ID})\n\n[${localize('learnMore', "Learn More")}](${defaultChat.documentationUrl}) | [${localize('hideSetup', "Hide")}](command:${ChatSetupHideAction.ID} "${localize('hideSetup', "Hide")}")`, { isTrusted: true }),
+			content: new MarkdownString([
+				header,
+				`[${localize('signInAndSetup', "Sign in to use {0}", defaultChat.name)}](command:${ChatSetupSignInAndInstallChatAction.ID})`,
+				footer,
+				`[${localize('learnMore', "Learn More")}](${defaultChat.documentationUrl}) | [${localize('hideSetup', "Hide")}](command:${ChatSetupHideAction.ID} "${localize('hideSetup', "Hide")}")`,
+			].join('\n\n'), { isTrusted: true }),
 		});
 
 		// Setup: Triggered (signed-in)
@@ -138,7 +146,12 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 				ChatContextKeys.panelParticipantRegistered.negate()
 			)!,
 			icon: defaultChat.icon,
-			content: new MarkdownString(`${localize('setupContent', "{0} is your AI pair programmer that helps you write code faster and smarter.", defaultChat.name)}\n\n[${localize('setup', "Install {0}", defaultChat.name)}](command:${ChatSetupInstallAction.ID})\n\n[${localize('learnMore', "Learn More")}](${defaultChat.documentationUrl}) | [${localize('hideSetup', "Hide")}](command:${ChatSetupHideAction.ID} "${localize('hideSetup', "Hide")}")`, { isTrusted: true }),
+			content: new MarkdownString([
+				header,
+				`[${localize('setup', "Install {0}", defaultChat.name)}](command:${ChatSetupInstallAction.ID})`,
+				footer,
+				`[${localize('learnMore', "Learn More")}](${defaultChat.documentationUrl}) | [${localize('hideSetup', "Hide")}](command:${ChatSetupHideAction.ID} "${localize('hideSetup', "Hide")}")`,
+			].join('\n\n'), { isTrusted: true })
 		});
 
 		// Setup: Signing-in
@@ -151,7 +164,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 			)!,
 			icon: defaultChat.icon,
 			progress: localize('setupChatSigningIn', "Signing in to {0}...", defaultChat.providerName),
-			content: new MarkdownString(`${localize('setupContent', "{0} is your AI pair programmer that helps you write code faster and smarter.", defaultChat.name)}`, { isTrusted: true }),
+			content: new MarkdownString(header, { isTrusted: true }),
 		});
 
 		// Setup: Installing
@@ -160,7 +173,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 			when: ChatContextKeys.ChatSetup.installing,
 			icon: defaultChat.icon,
 			progress: localize('setupChatInstalling', "Setting up Chat for you..."),
-			content: new MarkdownString(`${localize('setupContent', "{0} is your AI pair programmer that helps you write code faster and smarter.", defaultChat.name)}`, { isTrusted: true }),
+			content: new MarkdownString(header, { isTrusted: true }),
 		});
 	}
 
@@ -484,9 +497,6 @@ class ChatSetupSignInAndInstallChatAction extends Action2 {
 		const telemetryService = accessor.get(ITelemetryService);
 		const contextKeyService = accessor.get(IContextKeyService);
 		const viewsService = accessor.get(IViewsService);
-		const layoutService = accessor.get(IWorkbenchLayoutService);
-
-		const hideSecondarySidebar = !layoutService.isVisible(Parts.AUXILIARYBAR_PART);
 
 		const setupSigningInContextKey = ChatContextKeys.ChatSetup.signingIn.bindTo(contextKeyService);
 
@@ -504,9 +514,6 @@ class ChatSetupSignInAndInstallChatAction extends Action2 {
 		if (session) {
 			instantiationService.invokeFunction(accessor => ChatSetupInstallAction.install(accessor, true));
 		} else {
-			if (hideSecondarySidebar) {
-				layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART);
-			}
 			telemetryService.publicLog2<InstallChatEvent, InstallChatClassification>('commandCenter.chatInstall', { installResult: 'failedNotSignedIn', signedIn: false });
 		}
 	}
