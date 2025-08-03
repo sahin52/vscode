@@ -788,7 +788,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void> implements IDisposable
 	}
 
 	async updateChildren(element: TInput | T = this.root.element, recursive = true, rerender = false, options?: IAsyncDataTreeUpdateChildrenOptions<T>): Promise<void> {
-		await this._updateChildren(element, recursive, rerender, undefined, options);
+		await this._updateChildren(element, recursive, rerender, undefined, options); // #234285 Error trace 1
 	}
 
 	cancelAllRefreshPromises(): void {
@@ -805,7 +805,7 @@ export class AsyncDataTree<TInput, T, TFilterData = void> implements IDisposable
 		}
 
 		if (this.root.refreshPromise) {
-			await this.root.refreshPromise;
+			await this.root.refreshPromise; // #234285 'Canceled' error here causing the fail.
 			await Event.toPromise(this._onDidRender.event);
 		}
 

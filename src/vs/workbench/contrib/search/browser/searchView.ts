@@ -410,7 +410,7 @@ export class SearchView extends ViewPane {
 		this.viewModel = searchModel;
 		this.tree.setInput(this.viewModel.searchResult);
 
-		await this.onSearchResultsChanged();
+		await this.onSearchResultsChanged(); // #234285 Error trace 1
 		this.refreshInputs();
 
 		asyncResults.then((complete) => {
@@ -721,7 +721,7 @@ export class SearchView extends ViewPane {
 
 	private async onSearchResultsChanged(event?: IChangeEvent): Promise<void> {
 		if (this.isVisible()) {
-			return this.refreshAndUpdateCount(event);
+			return this.refreshAndUpdateCount(event); // #234285 Error trace 2
 		} else {
 			this.changedWhileHidden = true;
 		}
@@ -730,7 +730,7 @@ export class SearchView extends ViewPane {
 	private async refreshAndUpdateCount(event?: IChangeEvent): Promise<void> {
 		this.searchWidget.setReplaceAllActionState(!this.viewModel.searchResult.isEmpty());
 		this.updateSearchResultCount(this.viewModel.searchResult.query!.userDisabledExcludesAndIgnoreFiles, this.viewModel.searchResult.query?.onlyOpenEditors, event?.clearingAll);
-		return this.refreshTreeController.queue(event);
+		return this.refreshTreeController.queue(event); // #234285 Error trace 3
 	}
 
 	private originalShouldCollapse(match: RenderableMatch) {
@@ -2655,7 +2655,7 @@ class RefreshTreeController extends Disposable {
 		if (e) {
 			this.queuedIChangeEvents.push(e);
 		}
-		return this.refreshTreeThrottler.queue(this.refreshTreeUsingQueue.bind(this));
+		return this.refreshTreeThrottler.queue(this.refreshTreeUsingQueue.bind(this)); // #234285 Error trace 4
 	}
 
 	private async refreshTreeUsingQueue(): Promise<void> {
@@ -2666,7 +2666,7 @@ class RefreshTreeController extends Disposable {
 			clearingAll: this.queuedIChangeEvents.some(e => e.clearingAll),
 		};
 		this.queuedIChangeEvents = [];
-		return this.refreshTree(aggregateChangeEvent);
+		return this.refreshTree(aggregateChangeEvent); // #234285 Error trace 5
 	}
 
 	private async retrieveFileStats(): Promise<void> {
@@ -2683,7 +2683,7 @@ class RefreshTreeController extends Disposable {
 				await this.retrieveFileStats()
 					.then(() => this.searchView.getControl().updateChildren(undefined));
 			} else {
-				await this.searchView.getControl().updateChildren(undefined);
+				await this.searchView.getControl().updateChildren(undefined); // #234285 Error trace 6 - goes to asyncDataTree.ts file here
 			}
 		} else {
 			// If updated counts affect our search order, re-sort the view.

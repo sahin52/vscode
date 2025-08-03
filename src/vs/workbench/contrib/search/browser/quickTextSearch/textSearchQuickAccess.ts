@@ -114,7 +114,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 		}];
 		this.editorViewState.reset();
 		disposables.add(picker.onDidTriggerButton(async () => {
-			await this.moveToSearchViewlet(undefined);
+			await this.moveToSearchViewlet(undefined); // Error starts here
 			picker.hide();
 		}));
 
@@ -211,7 +211,7 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 		// then, this._searchModel will construct a new (empty) SearchModel.
 		this._viewsService.openView(VIEW_ID, false);
 		const viewlet: SearchView | undefined = this._viewsService.getActiveViewWithId(VIEW_ID) as SearchView;
-		await viewlet.replaceSearchModel(this.searchModel, this.currentAsyncSearch);
+		await viewlet.replaceSearchModel(this.searchModel, this.currentAsyncSearch); // Error goes to searchView.ts file
 
 		this.searchModel = this._instantiationService.createInstance(SearchModelImpl);
 		this.searchModel.location = SearchModelLocation.QUICK_ACCESS;
